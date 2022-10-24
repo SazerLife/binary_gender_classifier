@@ -1,0 +1,142 @@
+train:
+  dataclass:
+    source: binary_gender_сlassifier.data.dataclasses.libri_tts
+    name: LibriTTS
+    params:
+      data_path: data/external/LibriTTS
+      subset: "train-clean-100"
+      audio_transform_configs:
+        [
+          {
+            source: binary_gender_сlassifier.data.transforms.audio.same_length,
+            name: SameLength,
+            params: { length: 48000, padding_value: 0, dim: 1 },
+          },
+          {
+            source: binary_gender_сlassifier.data.transforms.audio.melspectrogram,
+            name: MelSpectrogram,
+            params:
+              {
+                n_mels: 128,
+                sample_rate: 24000,
+                n_fft: 1024,
+                win_length: 1024,
+                hop_length: 512,
+                power: 2,
+                f_min: 50,
+                f_max: 600,
+              },
+          },
+        ]
+      label_transform_configs:
+        [
+          {
+            source: binary_gender_сlassifier.data.transforms.gender.gender2value,
+            name: Gender2Value,
+            params: {},
+          },
+        ]
+  dataloader:
+    source: torch.utils.data
+    name: DataLoader
+    collator:
+      source: binary_gender_сlassifier.data.collators.default_collator
+      name: DefaultCollator
+      params: {}
+    params:
+      batch_size: 128
+      num_workers: 0
+      shuffle: true
+      drop_last: false
+
+val:
+  dataclass:
+    source: binary_gender_сlassifier.data.dataclasses.libri_tts
+    name: LibriTTS
+    params:
+      data_path: data/external/LibriTTS
+      subset: "dev-clean"
+      audio_transform_configs:
+        [
+          {
+            source: binary_gender_сlassifier.data.transforms.audio.same_length,
+            name: SameLength,
+            params: { length: 48000, padding_value: 0, dim: 1 },
+          },
+          {
+            source: binary_gender_сlassifier.data.transforms.audio.melspectrogram,
+            name: MelSpectrogram,
+            params:
+              {
+                n_mels: 128,
+                sample_rate: 24000,
+                n_fft: 1024,
+                win_length: 1024,
+                hop_length: 512,
+                power: 2,
+                f_min: 50,
+                f_max: 600,
+              },
+          },
+        ]
+      label_transform_configs:
+        [
+          {
+            source: binary_gender_сlassifier.data.transforms.gender.gender2value,
+            name: Gender2Value,
+            params: {},
+          },
+        ]
+  dataloader:
+    source: torch.utils.data
+    name: DataLoader
+    collator:
+      source: binary_gender_сlassifier.data.collators.default_collator
+      name: DefaultCollator
+      params: {}
+    params:
+      batch_size: 128
+      num_workers: 0
+      shuffle: false
+      drop_last: false
+
+training_objects:
+  model:
+    source: binary_gender_сlassifier.models.resnet
+    name: ResNet
+    use_checkpoint: false
+    params: { model: "resnet18", in_channels: 1, classes_count: 1 }
+  loss:
+    source: binary_gender_сlassifier.losses.bce
+    name: BCELoss
+    params: {}
+  optimizer:
+    source: torch.optim
+    name: AdamW
+    use_checkpoint: false
+    params:
+      lr: 0.001
+      weight_decay: 0.000001
+
+metrics:
+  accuracy:
+    source: binary_gender_сlassifier.metrics.accuracy
+    name: Accuracy
+    params: {}
+loggers:
+  tensorboard:
+    source: binary_gender_сlassifier.loggers.tensorboard
+    name: TensorboardLogger
+    params:
+      folder_to_save: "experiments/exp3-melspectrogram-resnet18/tensorboard"
+
+meta:
+  seed: 12345
+  device: "cuda:0"
+  checkpoint_path: ""
+  evaluations_step: 50
+  max_epochs_num: 10000
+  load_checkpoint_epoch: false
+  load_checkpoint_iteration: false
+  do_clip_grad_norm: True
+  grad_clip_threshold: 1.0
