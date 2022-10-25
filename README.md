@@ -1,6 +1,8 @@
 # Binary gender classifier
 Репозиторий-решение для задачи классификации пола на датасете LibtiTTS
 
+Все эксперименты описаны в `EXPERIMENTS_DESCRIPTION.md`
+
 ## Quick Start
 * Установите [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html#regular-installation)
 
